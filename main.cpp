@@ -1,35 +1,19 @@
-#include <cstdio>
-#include <cstring>
+#include <iostream>
+#include <ostream>
+#include <string>
 
-struct Options {
-  bool host = false;
-  const char *host_ip = nullptr;
-  const char *host_port = nullptr;
-};
-
-Options options;
-
-void host() {
-  printf("HOSTING");
-}
-
-void join() {
-  printf("JOINING");
+static void printHelp() {
+  std::cout << "must specify starting stack size : ./blackjack <STACK_SIZE>\n";
 }
 
 int main(int argc, char **argv) {
 
-  for (int i = 1; i < argc; ++i) {
-    if      (!strcmp(argv[i], "-h"))  options.host      = true;
-    else if (!strcmp(argv[i], "-p"))  options.host_port = argv[i + 1];
-    else if (!strcmp(argv[i], "-a")) options.host_ip   = argv[i + 1];
+  if (argc != 2) {
+    printHelp();
+    return 1;
   }
 
-  if (options.host) {
-    host();
-  } else { // join
-    join();
-  }
+  unsigned stack = std::stoi(argv[1]);
 
-  return 0;
+  std::cout << stack << std::endl;
 }
