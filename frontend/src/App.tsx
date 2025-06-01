@@ -1,24 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./globals.css"
+
+const PokerTable: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center h-screen bg-gray-900">
+      <div 
+      className="w-[500px] h-[300px] 
+      bg-green-700 rounded-full shadow-2xl border-4 border-green-900">
+        {/* You can add cards, chips, or players around here */}
+      </div>
+    </div>
+  );
+};
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <PokerTable/>
     </div>
   );
 }
