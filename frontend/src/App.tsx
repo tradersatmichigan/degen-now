@@ -1,7 +1,15 @@
+import { Box } from "@mui/material";
+import { Table } from "./Table"
+
 export function App() {
   return (
-    <div>
-    </div>
+    <Box
+      sx={{
+        justifyContent: 'center'
+      }}
+    >
+      <Table/>
+    </Box>
   );
 }
 
