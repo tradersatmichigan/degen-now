@@ -1,14 +1,31 @@
-import { Box } from "@mui/material";
-import { Table } from "./Table"
+import { Box, Paper } from "@mui/material";
 
 export function App() {
   return (
-    <Box
+    <Box 
+      className="poker-table-container"
       sx={{
-        justifyContent: 'center'
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#212121',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
-      <Table/>
+      
+      <Paper 
+        className="poker-table" 
+        elevation={3}
+        sx={{
+          width: '65vw',
+          height: '50vh',
+          backgroundColor: 'green',
+          borderRadius: '50%',
+        }}
+      >
+      </Paper>
+
     </Box>
   );
 }
