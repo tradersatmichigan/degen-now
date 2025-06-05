@@ -1,6 +1,26 @@
 import { Box, Paper } from "@mui/material";
+import { useState } from "react";
+
+interface Player {
+  stack: number
+  name: string
+}
+
+interface GameState {
+  players: Player[]
+}
 
 export function App() {
+  
+  const [gameState, setState] = useState<GameState>({
+    players: [
+      {
+        stack: 100,
+        name: "Bob",
+      }
+    ]
+  })
+
   return (
     <Box 
       className="poker-table-container"
