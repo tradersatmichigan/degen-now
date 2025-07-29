@@ -4,7 +4,7 @@ use std::ops::{Add, Sub};
 pub struct Card(u8);
 
 /// bitset representation of a set of cards
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct CardSet(u64);
 
 impl Add<Card> for CardSet {
@@ -51,6 +51,14 @@ impl CardSet {
         }
 
         None
+    }
+
+    pub fn contains(self, other: &Self) -> bool {
+        todo!()
+    }
+
+    pub fn remove(&mut self, other: &Self) {
+        self.0 &= self.0 ^ other.0;
     }
 }
 
