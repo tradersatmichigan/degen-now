@@ -2,12 +2,12 @@ use std::{collections::BTreeMap, sync::{Arc, Mutex}, time::{Duration}};
 
 mod card;
 
-use card::CardSet;
+pub type GameId = u64;
 
 /// container for all active games
 pub struct Manager {
     id_generator: IdGenerator,
-    games: BTreeMap<u64, Arc<Mutex<Game>>>,
+    games: BTreeMap<GameId, Arc<Mutex<Game>>>,
 }
 
 impl Manager {
@@ -18,7 +18,7 @@ impl Manager {
         }
     }
 
-    pub fn create_game(&mut self) -> u64 {
+    pub fn create_game(&mut self) -> GameId {
         let game_id = self.id_generator.get();
         self.games.insert(game_id, Arc::new(Mutex::new(Game::new())));
         game_id
@@ -35,13 +35,7 @@ impl Manager {
     }
 }
 
-// container for a games state
-pub struct Game {
-    is_running: bool,
-    players: Vec<Player>,
-    deck: CardSet,
-    board: CardSet,
-}
+pub struct Game {}
 
 impl Game {
     fn new() -> Self {
@@ -53,11 +47,7 @@ impl Game {
     }
 }
 
-struct Player {
-    buyin: u64,
-    current_stack: u64,
-    cards: CardSet,
-}
+struct Player {}
 
 /// sequential number generator that wraps back arround to zero
 struct IdGenerator(u64);
@@ -67,7 +57,7 @@ impl IdGenerator {
         Self(0)
     }
 
-    fn get(&mut self) -> u64 {
+    fn get(&mut self) -> GameId {
         let ans = self.0;
         self.0 = ans.wrapping_add(1);
         ans
