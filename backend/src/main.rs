@@ -1,14 +1,14 @@
-use axum::{routing::post, Router};
+use axum::{Router};
 
-mod handler;
-mod game_manager;
+mod game;
 
 #[tokio::main]
 async fn main() {
 
+    let game_manager = game::Manager::new();
+
     // Add api routes here
-    let app = Router::new()
-        .route("/create", post(handler::create::handle));
+    let app = Router::new();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
