@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::Router;
+use axum::{routing::post, Router};
 use tokio::sync::RwLock;
 
 mod game;
@@ -9,7 +9,9 @@ mod handler;
 pub fn app() -> Router {
     let manager = new_game_manager();
 
-    Router::new().with_state(manager)
+    Router::new()
+        .route("/create-game", post(handler::create_game::handle))
+        .with_state(manager)
 }
 
 /// sequential number generator that wraps back arround to zero
