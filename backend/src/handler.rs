@@ -1,5 +1,5 @@
 pub mod api {
-    use axum::{response::IntoResponse, Json};
+    use axum::{http::StatusCode, response::IntoResponse, Json};
     use serde_json::Value;
 
     pub struct Ok(Json<Value>);
@@ -26,7 +26,7 @@ pub mod api {
 
     impl IntoResponse for Error {
         fn into_response(self) -> axum::response::Response {
-            todo!()
+            (StatusCode::INTERNAL_SERVER_ERROR, self.0.to_string()).into_response()
         }
     }
 
