@@ -31,6 +31,3 @@ pub mod create_game {
         Json(Response{game_id})
     }
 }
-
-pub mod join_game {
-}
