@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use axum::{routing::post, Router};
-use tokio::sync::RwLock;
+use axum::{extract::{FromRef, FromRequestParts, Path}, http::{request::Parts, StatusCode}, routing::post, RequestPartsExt, Router};
+use tokio::sync::{RwLock, Mutex};
 
 mod game;
 mod handler;
@@ -33,4 +33,26 @@ type Manager = Arc<RwLock<game::Manager>>;
 
 fn new_game_manager() -> Manager {
     Arc::new(RwLock::new(game::Manager::new()))
+}
+
+// request extractor so that any api with game_id in 
+// path can receive the game struct without checking
+struct ExtractGame(Arc<Mutex<game::Game>>);
+
+impl<S: Send + Sync> FromRequestParts<S> for ExtractGame 
+where Manager: FromRef<S>
+{
+    type Rejection = (StatusCode, &'static str);
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) 
+        -> Result<Self,Self::Rejection> {
+        let manager = Manager::from_ref(state);
+        let Path(game_id) = parts.extract::<Path<u64>>().await
+            .map_err(|_| (StatusCode::BAD_REQUEST, "missing game id"))?;
+
+        match manager.read().await.get(game_id) {
+            Some(game) => Ok(ExtractGame(game)),
+            None => Err((StatusCode::BAD_REQUEST, "no game exists with this id")),
+        }
+    }
 }
