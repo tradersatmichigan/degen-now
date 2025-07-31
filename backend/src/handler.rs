@@ -32,9 +32,5 @@ pub mod create_game {
     }
 }
 
-// TODO
 pub mod join_game {
-    pub struct Request {
-        username: String,
-    }
 }
