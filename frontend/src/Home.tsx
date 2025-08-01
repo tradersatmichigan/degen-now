@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
 const Home: React.FC = () => {
   const handleCreateGame = () => {
-    console.log('Create game clicked!');
+    console.log("Create game clicked!");
     // Add your game creation logic here
   };
 
@@ -25,13 +25,18 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
           <span className="relative flex items-center gap-2">
             Create Game
-            <svg 
-              className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </span>
         </button>
