@@ -1,9 +1,16 @@
 import React from "react";
+import { createGame } from "./client";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
-  const handleCreateGame = () => {
-    console.log("Create game clicked!");
-    // Add your game creation logic here
+
+  const navigate = useNavigate();
+
+  const handleCreateGame = async () => {
+    const resp = await createGame();
+    if (resp) {
+      navigate(`/${resp.game_id}`);
+    }
   };
 
   return (
