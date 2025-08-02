@@ -1,18 +1,45 @@
 use std::sync::Arc;
 
-use axum::{extract::{FromRef, FromRequestParts, Path}, http::{request::Parts, StatusCode}, routing::post, RequestPartsExt, Router};
-use tokio::sync::{RwLock, Mutex};
+use axum::{extract::FromRef, Router};
+use axum_extra::extract::cookie::Key;
+use tokio::sync::RwLock;
 
 mod game;
 mod handler;
 
 pub fn app() -> Router {
-    let manager = new_game_manager();
+    let state = AppState::new();
 
     Router::new()
-        .route("/create-game", post(handler::create_game::handle))
-        .with_state(manager)
+        .with_state(state)
 }
+
+type Manager = Arc<RwLock<game::Manager>>;
+
+#[derive(Clone)]
+struct AppState {
+    cookie_key: Key,
+    manager: Manager,
+}
+
+impl FromRef<AppState> for Key {
+    fn from_ref(input: &AppState) -> Self {
+        input.cookie_key.clone()
+    }
+}
+
+impl FromRef<AppState> for Manager {
+    fn from_ref(input: &AppState) -> Self {
+        input.manager.clone()
+    }
+}
+
+impl AppState {
+    fn new() -> Self {
+        todo!()
+    }
+}
+
 
 /// sequential number generator that wraps back arround to zero
 struct IdGenerator(u64);
@@ -26,33 +53,5 @@ impl IdGenerator {
         let ans = self.0;
         self.0 = ans.wrapping_add(1);
         ans
-    }
-}
-
-type Manager = Arc<RwLock<game::Manager>>;
-
-fn new_game_manager() -> Manager {
-    Arc::new(RwLock::new(game::Manager::new()))
-}
-
-// request extractor so that any api with game_id in 
-// path can receive the game struct without checking
-struct ExtractGame(Arc<Mutex<game::Game>>);
-
-impl<S: Send + Sync> FromRequestParts<S> for ExtractGame 
-where Manager: FromRef<S>
-{
-    type Rejection = (StatusCode, &'static str);
-
-    async fn from_request_parts(parts: &mut Parts, state: &S) 
-        -> Result<Self,Self::Rejection> {
-        let manager = Manager::from_ref(state);
-        let Path(game_id) = parts.extract::<Path<u64>>().await
-            .map_err(|_| (StatusCode::BAD_REQUEST, "missing game id"))?;
-
-        match manager.read().await.get(game_id) {
-            Some(game) => Ok(ExtractGame(game)),
-            None => Err((StatusCode::BAD_REQUEST, "no game exists with this id")),
-        }
     }
 }

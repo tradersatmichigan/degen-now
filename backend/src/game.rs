@@ -37,3 +37,13 @@ impl Default for Game {
         Self {}
     }
 }
+
+impl Game {
+    pub fn join(&mut self, name: String) -> anyhow::Result<()> {
+        todo!()
+    }
+
+    pub fn buyin(&mut self, name: String, amount :u64) -> anyhow::Result<()> {
+        todo!()
+    }
+}
