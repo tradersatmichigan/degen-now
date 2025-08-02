@@ -1,49 +1,56 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use tokio::sync::RwLock;
 use tokio::sync::Mutex;
 
-use crate::IdGenerator;
-
 /// container for all active games
-pub struct Manager {
-    id_generator: IdGenerator,
-    games: BTreeMap<u64, Arc<Mutex<Game>>>,
-}
+#[derive(Clone)]
+pub struct Manager(Arc<RwLock<BTreeMap<GameId, Game>>>);
 
 impl Manager {
     pub fn new() -> Self {
-        Self {
-            id_generator: IdGenerator::new(),
-            games: BTreeMap::new(),
-        }
+        Self(Arc::new(RwLock::new(BTreeMap::new())))
     }
 
-    pub fn create_game(&mut self) -> u64 {
-        let game_id = self.id_generator.get();
-        self.games
-            .insert(game_id, Arc::new(Mutex::new(Game::default())));
-        game_id
+    pub async fn create(&self) -> GameId {
+        let id = GameId::new();
+        self.0.write().await.insert(id.clone(), Game::default());
+        id
     }
 
-    pub fn get(&self, game_id: u64) -> Option<Arc<Mutex<Game>>> {
-        self.games.get(&game_id).cloned()
+    pub async fn get(&self, game_id: GameId) -> Option<Game> {
+        self.0.read().await.get(&game_id).cloned()
     }
 }
 
-pub struct Game {}
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+pub struct GameId(uuid::Uuid);
+
+impl GameId {
+    fn new() -> Self {
+        Self(uuid::Uuid::new_v4())
+    }
+}
+
+impl ToString for GameId {
+    fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
+#[derive(Clone)]
+pub struct Game(Arc<Mutex<GameState>>);
 
 impl Default for Game {
     fn default() -> Self {
-        Self {}
+        Self(Arc::new(Mutex::new(GameState::default())))
     }
 }
 
-impl Game {
-    pub fn join(&mut self, name: String) -> anyhow::Result<()> {
-        todo!()
-    }
+struct GameState {}
 
-    pub fn buyin(&mut self, name: String, amount :u64) -> anyhow::Result<()> {
-        todo!()
+impl Default for GameState {
+    fn default() -> Self {
+        Self {}
     }
 }

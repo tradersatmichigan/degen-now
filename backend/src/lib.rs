@@ -1,20 +1,18 @@
-use std::sync::Arc;
-
-use axum::{extract::FromRef, Router};
+use axum::{extract::FromRef, routing::post, Router};
 use axum_extra::extract::cookie::Key;
-use tokio::sync::RwLock;
 
 mod game;
 mod handler;
+
+use game::Manager;
 
 pub fn app() -> Router {
     let state = AppState::new();
 
     Router::new()
+        .route("/create", post(handler::create::handle))
         .with_state(state)
 }
-
-type Manager = Arc<RwLock<game::Manager>>;
 
 #[derive(Clone)]
 struct AppState {
@@ -36,22 +34,9 @@ impl FromRef<AppState> for Manager {
 
 impl AppState {
     fn new() -> Self {
-        todo!()
-    }
-}
-
-
-/// sequential number generator that wraps back arround to zero
-struct IdGenerator(u64);
-
-impl IdGenerator {
-    fn new() -> Self {
-        Self(0)
-    }
-
-    fn get(&mut self) -> u64 {
-        let ans = self.0;
-        self.0 = ans.wrapping_add(1);
-        ans
+        Self {
+            cookie_key: Key::generate(),
+            manager: game::Manager::new()
+        }
     }
 }

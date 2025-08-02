@@ -17,3 +17,21 @@ pub mod api {
 
     pub type ApiResult<T> = Result<T, Error>;
 }
+
+pub mod create {
+    use axum::{extract::State, Json};
+
+    use crate::game::Manager;
+
+    #[derive(serde::Serialize)]
+    pub struct Response {
+        game_id: String,
+    }
+
+    pub async fn handle(manager : State<Manager>) -> Json<Response> {
+        let id = manager.create().await;
+        Json(Response{
+            game_id: id.to_string(),
+        })
+    }
+}
