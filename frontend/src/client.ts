@@ -1,7 +1,7 @@
 import type { CreateGameResponse } from "./types";
 
 export const createGame = async () => {
-  return callApi<CreateGameResponse>("/create-game");
+  return callApi<CreateGameResponse>("/create");
 }
 
 // endpoint should be path without /api prefix

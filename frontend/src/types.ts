@@ -1,3 +1,3 @@
 export interface CreateGameResponse {
-  game_id: number,
+  game_id: string,
 }
