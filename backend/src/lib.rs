@@ -1,4 +1,4 @@
-use axum::{extract::FromRef, routing::post, Router};
+use axum::{Router, extract::FromRef, routing::post};
 use axum_extra::extract::cookie::Key;
 
 mod game;
@@ -11,6 +11,7 @@ pub fn app() -> Router {
 
     Router::new()
         .route("/create", post(handler::create::handle))
+        .route("/{game_id}/join", post(handler::join::handle))
         .with_state(state)
 }
 
@@ -36,7 +37,7 @@ impl AppState {
     fn new() -> Self {
         Self {
             cookie_key: Key::generate(),
-            manager: game::Manager::new()
+            manager: game::Manager::new(),
         }
     }
 }

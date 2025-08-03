@@ -1,7 +1,8 @@
+use std::str::FromStr;
 use std::{collections::BTreeMap, sync::Arc};
 
-use tokio::sync::RwLock;
 use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
 /// container for all active games
 #[derive(Clone)]
@@ -18,8 +19,8 @@ impl Manager {
         id
     }
 
-    pub async fn get(&self, game_id: GameId) -> Option<Game> {
-        self.0.read().await.get(&game_id).cloned()
+    pub async fn get(&self, game_id: &GameId) -> Option<Game> {
+        self.0.read().await.get(game_id).cloned()
     }
 }
 
@@ -32,6 +33,14 @@ impl GameId {
     }
 }
 
+impl FromStr for GameId {
+    type Err = uuid::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        uuid::Uuid::parse_str(s).map(GameId)
+    }
+}
+
 impl ToString for GameId {
     fn to_string(&self) -> String {
         self.0.to_string()
@@ -40,6 +49,12 @@ impl ToString for GameId {
 
 #[derive(Clone)]
 pub struct Game(Arc<Mutex<GameState>>);
+
+impl Game {
+    pub async fn join(&self, name: &str) -> anyhow::Result<()> {
+        todo!()
+    }
+}
 
 impl Default for Game {
     fn default() -> Self {

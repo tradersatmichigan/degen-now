@@ -19,7 +19,7 @@ pub mod api {
 }
 
 pub mod create {
-    use axum::{extract::State, Json};
+    use axum::{Json, extract::State};
 
     use crate::game::Manager;
 
@@ -28,10 +28,41 @@ pub mod create {
         game_id: String,
     }
 
-    pub async fn handle(manager : State<Manager>) -> Json<Response> {
+    pub async fn handle(manager: State<Manager>) -> Json<Response> {
         let id = manager.create().await;
-        Json(Response{
+        Json(Response {
             game_id: id.to_string(),
         })
+    }
+}
+
+pub mod join {
+    use anyhow::anyhow;
+    use axum::{
+        Json,
+        extract::{Path, State},
+    };
+    use axum_extra::extract::{cookie::Cookie, SignedCookieJar};
+
+    use crate::{
+        game::Manager,
+        handler::api::ApiResult,
+    };
+
+    #[derive(serde::Deserialize)]
+    pub struct Request {
+        name: String,
+    }
+
+    pub async fn handle(
+        State(manager): State<Manager>,
+        Path(game_id): Path<String>,
+        jar: SignedCookieJar,
+        Json(request): Json<Request>,
+    ) -> ApiResult<SignedCookieJar> {
+        let game = 
+            manager.get(&game_id.parse()?).await.ok_or(anyhow!("Game doesn't exist"))?;
+        game.join(&request.name).await?;
+        Ok(jar.add(Cookie::new(game_id, request.name)))
     }
 }
