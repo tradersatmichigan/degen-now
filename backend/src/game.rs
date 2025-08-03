@@ -4,6 +4,8 @@ use std::{collections::BTreeMap, sync::Arc};
 use tokio::sync::Mutex;
 use tokio::sync::RwLock;
 
+mod card;
+
 /// container for all active games
 #[derive(Clone)]
 pub struct Manager(Arc<RwLock<BTreeMap<GameId, Game>>>);
@@ -52,7 +54,28 @@ pub struct Game(Arc<Mutex<GameState>>);
 
 impl Game {
     pub async fn join(&self, name: &str) -> anyhow::Result<()> {
-        todo!()
+        let mut game = self.0.lock().await;
+        
+        if game.players.len() == 0 {
+            game.players.insert(name.into(), Player::owner());
+            Ok(())
+        } else if game.players.contains_key(name) {
+            anyhow::bail!("Name is already taken");
+        } else {
+            game.players.insert(name.into(), Player::player());
+            Ok(())
+        }
+    }
+
+    pub async fn buyin(&self, name: &str, amount: u64) {
+        let mut game = self.0.lock().await;
+        let player = game.players.get_mut(name).unwrap();
+
+        if player.is_owner {
+            player.total_buyin += amount as i64;
+        } else {
+            todo!()
+        }
     }
 }
 
@@ -62,10 +85,35 @@ impl Default for Game {
     }
 }
 
-struct GameState {}
+struct GameState {
+    players: BTreeMap<String, Player>,
+}
 
 impl Default for GameState {
     fn default() -> Self {
-        Self {}
+        Self {
+            players: BTreeMap::new(),
+        }
+    }
+}
+
+struct Player {
+    is_owner: bool,
+    total_buyin: i64,
+}
+
+impl Player {
+    fn owner() -> Self {
+        Self {
+            is_owner: true,
+            total_buyin: 0,
+        }
+    }
+
+    fn player() -> Self {
+        Self {
+            is_owner: false,
+            total_buyin: 0,
+        }
     }
 }
