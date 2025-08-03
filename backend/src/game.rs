@@ -76,9 +76,7 @@ impl Game {
         todo!()
     }
 
-    pub async fn tick(&self) {
-        todo!()
-    }
+    pub async fn tick(&self) {}
 }
 
 impl Default for Game {
