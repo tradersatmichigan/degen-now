@@ -42,12 +42,9 @@ pub mod join {
         Json,
         extract::{Path, State},
     };
-    use axum_extra::extract::{cookie::Cookie, SignedCookieJar};
+    use axum_extra::extract::{SignedCookieJar, cookie::Cookie};
 
-    use crate::{
-        game::Manager,
-        handler::api::ApiResult,
-    };
+    use crate::{game::Manager, handler::api::ApiResult};
 
     #[derive(serde::Deserialize)]
     pub struct Request {
@@ -60,8 +57,10 @@ pub mod join {
         jar: SignedCookieJar,
         Json(request): Json<Request>,
     ) -> ApiResult<SignedCookieJar> {
-        let game = 
-            manager.get(&game_id.parse()?).await.ok_or(anyhow!("Game doesn't exist"))?;
+        let game = manager
+            .get(&game_id.parse()?)
+            .await
+            .ok_or(anyhow!("Game doesn't exist"))?;
         game.join(&request.name).await?;
         Ok(jar.add(Cookie::new(game_id, request.name)))
     }

@@ -24,8 +24,19 @@ impl Manager {
     pub async fn get(&self, game_id: &GameId) -> Option<Game> {
         self.0.read().await.get(game_id).cloned()
     }
+
+    /// update time in all games to force actions like
+    /// auto fold, card dealing and other timed events
+    pub async fn tick(&self) {
+        let mp = self.0.read().await;
+
+        for (_, game) in mp.iter() {
+            game.tick().await;
+        }
+    }
 }
 
+/// used as key to identify game
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct GameId(uuid::Uuid);
 
@@ -54,28 +65,19 @@ pub struct Game(Arc<Mutex<GameState>>);
 
 impl Game {
     pub async fn join(&self, name: &str) -> anyhow::Result<()> {
-        let mut game = self.0.lock().await;
-        
-        if game.players.len() == 0 {
-            game.players.insert(name.into(), Player::owner());
-            Ok(())
-        } else if game.players.contains_key(name) {
-            anyhow::bail!("Name is already taken");
-        } else {
-            game.players.insert(name.into(), Player::player());
-            Ok(())
-        }
+        todo!()
     }
 
     pub async fn buyin(&self, name: &str, amount: u64) {
-        let mut game = self.0.lock().await;
-        let player = game.players.get_mut(name).unwrap();
+        todo!()
+    }
 
-        if player.is_owner {
-            player.total_buyin += amount as i64;
-        } else {
-            todo!()
-        }
+    pub async fn act(&self, name: &str, action: Action) -> anyhow::Result<()> {
+        todo!()
+    }
+
+    pub async fn tick(&self) {
+        todo!()
     }
 }
 
@@ -85,35 +87,16 @@ impl Default for Game {
     }
 }
 
-struct GameState {
-    players: BTreeMap<String, Player>,
+pub enum Action {
+    BET(u64),
+    CHECK,
+    FOLD,
 }
+
+struct GameState {}
 
 impl Default for GameState {
     fn default() -> Self {
-        Self {
-            players: BTreeMap::new(),
-        }
-    }
-}
-
-struct Player {
-    is_owner: bool,
-    total_buyin: i64,
-}
-
-impl Player {
-    fn owner() -> Self {
-        Self {
-            is_owner: true,
-            total_buyin: 0,
-        }
-    }
-
-    fn player() -> Self {
-        Self {
-            is_owner: false,
-            total_buyin: 0,
-        }
+        Self {}
     }
 }

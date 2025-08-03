@@ -1,3 +1,5 @@
+use std::time::{Duration};
+
 use axum::{Router, extract::FromRef, routing::post};
 use axum_extra::extract::cookie::Key;
 
@@ -8,6 +10,14 @@ use game::Manager;
 
 pub fn app() -> Router {
     let state = AppState::new();
+
+    let manager = state.manager.clone();
+    tokio::spawn(async move {
+        loop {
+            manager.tick().await;
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    });
 
     Router::new()
         .route("/create", post(handler::create::handle))
