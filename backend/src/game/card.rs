@@ -2,6 +2,87 @@ use std::ops::{Add, Sub};
 
 use anyhow::Context;
 
+/// NLH poker hands
+pub enum NlhHand {
+
+    // (top 5 cards...)
+    HighCard(Value, Value, Value, Value, Value),
+
+    // (pair, kickers...)
+    Pair(Value, Value, Value, Value),
+
+    // (high pair, low pair, kicker)
+    TwoPair(Value, Value, Value),
+
+    // (three cards, high kicker, lower kicker)
+    ThreeOfAKind(Value, Value, Value),
+
+    // (highest card)
+    Straight(Value),
+
+    // (highest card)
+    Flush(Value),
+
+    // (3 cards, 2 cards)
+    FullHouse(Value, Value),
+
+    // (4 cards, kicker)
+    Quads(Value, Value),
+
+    // (highest card)
+    StraightFlush(Value),
+}
+
+impl From<CardSet> for NlhHand {
+    fn from(value: CardSet) -> Self {
+        let bits = value.0;
+
+        // Straight flush
+        {
+            let len = 5;
+            let sf_mask = (1 << len) - 1;
+            for i in 0..Suit::COUNT {
+                let suit_bits = bits >> (Value::COUNT * i);
+
+                for j in Value::COUNT - len..=0 {
+                    if (suit_bits >> j) & sf_mask == sf_mask {
+                        return Self::StraightFlush(Value::try_from(j + len - 1).unwrap())
+                    }
+                }
+            }
+        }
+
+        // Quads
+        {
+            let v_mask = (1 << Value::COUNT) - 1;
+            let joined = (0..Suit::COUNT).fold(v_mask, |acc, i| {
+                acc & (bits >> (i * Value::COUNT))
+            });
+
+            if joined != 0 {
+                let four: Value = joined.trailing_zeros().try_into().unwrap();
+                let all = (0..Suit::COUNT).fold(0, |acc, i| {
+                    acc | (bits >> (i * Value::COUNT))
+                });
+
+                for i in Value::COUNT - 1..=0 {
+                    if ((all & !joined) >> i) & 1 == 1 {
+                        return Self::Quads(four, i.try_into().unwrap())
+                    }
+                }
+                unreachable!()
+            }
+        }
+
+        // Full house
+        {
+
+        }
+
+        todo!()
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct CardSet(u64);
 
@@ -24,7 +105,7 @@ impl Sub<Card> for CardSet {
 }
 
 impl CardSet {
-
+    
     /// number of cards in the set
     pub fn len(self) -> u32 {
         self.0.count_ones()
@@ -37,7 +118,23 @@ impl CardSet {
 
     /// set with 52 cards
     pub fn full() -> Self {
-        Self((1u64 << 52) - 1)
+        Self((1u64 << Card::COUNT) - 1)
+    }
+
+    /// return the ith card in set, ordered by suit then
+    /// ordered by rank within suit
+    pub fn at(self, mut idx: usize) -> Option<Card> {
+        for i in 0..Card::COUNT {
+            if (self.0 >> i) & 1 == 1 {
+                if idx > 0 {
+                    idx -= 1;
+                } else {
+                    return Some(Card::try_from(i).unwrap())
+                }
+            }
+        }
+
+        None
     }
 }
 
@@ -47,14 +144,20 @@ pub struct Card {
     value: Value,
 }
 
+impl Card {
+    const COUNT: u32 = Suit::COUNT * Value::COUNT;
+}
+
 impl TryFrom<u32> for Card {
     type Error = anyhow::Error;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        let error: String = format!("{} is not a valid card", value);
+        if value >= Self::COUNT {
+            anyhow::bail!("{} is not a valid card", value);
+        }
 
-        let suit: Suit = (value / 13).try_into().context(error.clone())?;
-        let value: Value = (value % 13).try_into().context(error.clone())?;
+        let suit: Suit = (value / 13).try_into().unwrap();
+        let value: Value = (value % 13).try_into().unwrap();
         Ok(Card{suit, value})
     }
 }
@@ -63,7 +166,7 @@ impl From<Card> for u32 {
     fn from(value: Card) -> Self {
         let suit: u32 = value.suit.into();
         let value: u32 = value.value.into();
-        suit * 13 + value
+        suit * Value::COUNT + value
     }
 }
 
@@ -73,6 +176,10 @@ pub enum Suit {
     Hearts,
     Spades,
     Clubs,
+}
+
+impl Suit {
+    const COUNT: u32 = 4;
 }
 
 impl TryFrom<u32> for Suit {
@@ -111,6 +218,10 @@ pub enum Value {
     Queen,
     King,
     Ace,
+}
+
+impl Value {
+    const COUNT: u32 = 13;
 }
 
 impl TryFrom<u32> for Value {
