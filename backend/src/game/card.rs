@@ -63,7 +63,7 @@ impl From<Card> for u32 {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Suit {
     Diamonds,
     Hearts,
@@ -92,7 +92,7 @@ impl From<Suit> for u32 {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Value {
     Two,
     Three,
@@ -136,5 +136,46 @@ impl TryFrom<u32> for Value {
 impl From<Value> for u32 {
     fn from(value: Value) -> Self {
         value as u32
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_suit_u32() {
+        let suits = vec![Suit::Diamonds, Suit::Hearts, Suit::Spades, Suit::Clubs];
+
+        for suit in suits {
+            let s: u32 = suit.into();
+            let s: Suit = s.try_into().unwrap();
+            assert_eq!(suit, s);
+        }
+    }
+
+    #[test]
+    fn test_value_u32() {
+        let values = vec![
+            Value::Two,
+            Value::Three,
+            Value::Four,
+            Value::Five,
+            Value::Six,
+            Value::Seven,
+            Value::Eight,
+            Value::Nine,
+            Value::Ten,
+            Value::Jack,
+            Value::Queen,
+            Value::King,
+            Value::Ace,
+        ];
+
+        for value in values {
+            let v: u32 = value.into();
+            let v: Value = v.try_into().unwrap();
+            assert_eq!(value, v);
+        }
     }
 }
