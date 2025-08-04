@@ -21,7 +21,7 @@ pub enum NlhHand {
     Straight(Value),
 
     // (highest card)
-    Flush(Value),
+    Flush(Value, Value, Value, Value, Value),
 
     // (3 cards, 2 cards)
     FullHouse(Value, Value),
@@ -74,9 +74,31 @@ impl From<CardSet> for NlhHand {
             }
         }
 
-        // Full house
+        // Flush
         {
+            let v_mask = (1 << Value::COUNT) - 1;
+            for i in 0..Suit::COUNT {
+                let suit_bits = (bits >> (Value::COUNT * i)) & v_mask;
 
+                if suit_bits.count_ones() >= 5 {
+                    let mut idx = [Value::Two; 5];
+                    let mut cnt = 0;
+
+                    for i in (0..Value::COUNT).rev() {
+                        if (suit_bits >> i) & 1 == 1 {
+                            idx[cnt] = i.try_into().unwrap();
+                            cnt += 1;
+
+                            if cnt == 5 {
+                                break
+                            }
+                        }
+                    }
+
+                    assert_eq!(cnt, 5);
+                    return Self::Flush(idx[0], idx[1], idx[2], idx[3], idx[4]);
+                }
+            }
         }
 
         todo!()
@@ -296,7 +318,7 @@ mod test {
 
     #[test]
     fn test_card_u32() {
-        for i in 0..52 {
+        for i in 0..Card::COUNT {
             let c: Card = i.try_into().unwrap();
             let c: u32 = c.into();
             assert_eq!(i, c);
