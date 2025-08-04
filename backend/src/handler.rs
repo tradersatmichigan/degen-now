@@ -44,7 +44,7 @@ pub mod join {
     };
     use axum_extra::extract::{SignedCookieJar, cookie::Cookie};
 
-    use crate::{game::Manager, handler::api::ApiResult};
+    use crate::{Manager, handler::api::ApiResult};
 
     #[derive(serde::Deserialize)]
     pub struct Request {
@@ -63,5 +63,63 @@ pub mod join {
             .ok_or(anyhow!("Game doesn't exist"))?;
         game.join(&request.name).await?;
         Ok(jar.add(Cookie::new(game_id, request.name)))
+    }
+}
+
+pub mod buyin {
+    use axum::{extract::{Path, State}, Json};
+    use axum_extra::extract::SignedCookieJar;
+
+    use crate::{Manager, handler::api::ApiResult};
+
+
+    #[derive(serde::Deserialize)]
+    pub struct Request {
+        amount: u64,
+    }
+
+    pub async fn handle(
+        State(manager): State<Manager>,
+        Path(game_id): Path<String>,
+        jar: SignedCookieJar,
+        Json(request): Json<Request>,
+    ) -> ApiResult<()> {
+        let game = manager
+            .get(&game_id.parse()?)
+            .await
+            .ok_or(anyhow::anyhow!("Game doesn't exist big dawg"))?;
+        let user = jar.get(&game_id)
+            .ok_or(anyhow::anyhow!("You haven't joined yet big dawg"))?;
+        game.buyin(user.value(), request.amount).await;
+        Ok(())
+    }
+}
+
+pub mod act {
+    use axum::{extract::{Path, State}, Json};
+    use axum_extra::extract::SignedCookieJar;
+
+    use crate::{game::Action, handler::api::ApiResult, Manager};
+
+
+    #[derive(serde::Deserialize)]
+    pub struct Request {
+        action: Action
+    }
+
+    pub async fn handle(
+        State(manager): State<Manager>,
+        Path(game_id): Path<String>,
+        jar: SignedCookieJar,
+        Json(request): Json<Request>,
+    ) -> ApiResult<()> {
+        let game = manager
+            .get(&game_id.parse()?)
+            .await
+            .ok_or(anyhow::anyhow!("Game doesn't exist big dawg"))?;
+        let user = jar.get(&game_id)
+            .ok_or(anyhow::anyhow!("You haven't joined yet big dawg"))?;
+        game.act(user.value(), request.action).await?;
+        Ok(())
     }
 }

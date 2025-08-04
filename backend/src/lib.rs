@@ -22,6 +22,8 @@ pub fn app() -> Router {
     Router::new()
         .route("/create", post(handler::create::handle))
         .route("/{game_id}/join", post(handler::join::handle))
+        .route("/{game_id}/buyin", post(handler::buyin::handle))
+        .route("/{game_id}/act", post(handler::act::handle))
         .with_state(state)
 }
 

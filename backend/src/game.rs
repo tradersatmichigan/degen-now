@@ -85,10 +85,11 @@ impl Default for Game {
     }
 }
 
+#[derive(serde::Deserialize)]
 pub enum Action {
-    BET(u64),
-    CHECK,
-    FOLD,
+    Bet(u64),
+    Check,
+    Fold,
 }
 
 struct GameState {}
