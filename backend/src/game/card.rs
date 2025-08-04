@@ -1,5 +1,7 @@
 use std::ops::{Add, Sub};
 
+use anyhow::Context;
+
 #[derive(Clone, Copy)]
 pub struct CardSet(u64);
 
@@ -49,8 +51,10 @@ impl TryFrom<u32> for Card {
     type Error = anyhow::Error;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
-        let suit: Suit = (value / 13).try_into()?;
-        let value: Value = (value % 13).try_into()?;
+        let error: String = format!("{} is not a valid card", value);
+
+        let suit: Suit = (value / 13).try_into().context(error.clone())?;
+        let value: Value = (value % 13).try_into().context(error.clone())?;
         Ok(Card{suit, value})
     }
 }
@@ -176,6 +180,15 @@ mod test {
             let v: u32 = value.into();
             let v: Value = v.try_into().unwrap();
             assert_eq!(value, v);
+        }
+    }
+
+    #[test]
+    fn test_card_u32() {
+        for i in 0..52 {
+            let c: Card = i.try_into().unwrap();
+            let c: u32 = c.into();
+            assert_eq!(i, c);
         }
     }
 }
