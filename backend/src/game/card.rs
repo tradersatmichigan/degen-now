@@ -104,7 +104,19 @@ impl From<CardSet> for NlhHand {
         }
 
         // Straight
-        {}
+        {
+            let value_bits = (0..Suit::COUNT).fold(0, |acc, i| {
+                acc | (bits >> (Value::COUNT * i))
+            });
+            let mask_len = 5;
+            let mask = (1 << mask_len) - 1;
+
+            for i in (0..=Value::COUNT - mask_len).rev() {
+                if (value_bits >> i) & mask == mask {
+                    return Self::Straight(Value::try_from(i + mask_len - 1).unwrap())
+                }
+            }
+        }
 
         // Trips
         {}
@@ -238,7 +250,7 @@ impl From<Suit> for u32 {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
     Two,
     Three,
