@@ -67,11 +67,13 @@ pub mod join {
 }
 
 pub mod buyin {
-    use axum::{extract::{Path, State}, Json};
+    use axum::{
+        Json,
+        extract::{Path, State},
+    };
     use axum_extra::extract::SignedCookieJar;
 
     use crate::{Manager, handler::api::ApiResult};
-
 
     #[derive(serde::Deserialize)]
     pub struct Request {
@@ -88,7 +90,9 @@ pub mod buyin {
             .get(&game_id.parse()?)
             .await
             .ok_or(anyhow::anyhow!("Game doesn't exist big dawg"))?;
-        let user = jar.get(&game_id)
+
+        let user = jar
+            .get(&game_id)
             .ok_or(anyhow::anyhow!("You haven't joined yet big dawg"))?;
         game.buyin(user.value(), request.amount).await;
         Ok(())
@@ -96,15 +100,17 @@ pub mod buyin {
 }
 
 pub mod act {
-    use axum::{extract::{Path, State}, Json};
+    use axum::{
+        Json,
+        extract::{Path, State},
+    };
     use axum_extra::extract::SignedCookieJar;
 
-    use crate::{game::Action, handler::api::ApiResult, Manager};
-
+    use crate::{Manager, game::Action, handler::api::ApiResult};
 
     #[derive(serde::Deserialize)]
     pub struct Request {
-        action: Action
+        action: Action,
     }
 
     pub async fn handle(
@@ -117,7 +123,8 @@ pub mod act {
             .get(&game_id.parse()?)
             .await
             .ok_or(anyhow::anyhow!("Game doesn't exist big dawg"))?;
-        let user = jar.get(&game_id)
+        let user = jar
+            .get(&game_id)
             .ok_or(anyhow::anyhow!("You haven't joined yet big dawg"))?;
         game.act(user.value(), request.action).await?;
         Ok(())

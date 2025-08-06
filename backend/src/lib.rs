@@ -1,4 +1,4 @@
-use std::time::{Duration};
+use std::time::Duration;
 
 use axum::{Router, extract::FromRef, routing::post};
 use axum_extra::extract::cookie::Key;

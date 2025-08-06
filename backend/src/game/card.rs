@@ -1,10 +1,7 @@
 use std::ops::{Add, Sub};
 
-use anyhow::Context;
-
 /// NLH poker hands
 pub enum NlhHand {
-
     // (top 5 cards...)
     HighCard(Value, Value, Value, Value, Value),
 
@@ -46,7 +43,7 @@ impl From<CardSet> for NlhHand {
 
                 for j in Value::COUNT - len..=0 {
                     if (suit_bits >> j) & sf_mask == sf_mask {
-                        return Self::StraightFlush(Value::try_from(j + len - 1).unwrap())
+                        return Self::StraightFlush(Value::try_from(j + len - 1).unwrap());
                     }
                 }
             }
@@ -55,24 +52,23 @@ impl From<CardSet> for NlhHand {
         // Quads
         {
             let v_mask = (1 << Value::COUNT) - 1;
-            let joined = (0..Suit::COUNT).fold(v_mask, |acc, i| {
-                acc & (bits >> (i * Value::COUNT))
-            });
+            let joined = (0..Suit::COUNT).fold(v_mask, |acc, i| acc & (bits >> (i * Value::COUNT)));
 
             if joined != 0 {
                 let four: Value = joined.trailing_zeros().try_into().unwrap();
-                let all = (0..Suit::COUNT).fold(0, |acc, i| {
-                    acc | (bits >> (i * Value::COUNT))
-                });
+                let all = (0..Suit::COUNT).fold(0, |acc, i| acc | (bits >> (i * Value::COUNT)));
 
-                for i in Value::COUNT - 1..=0 {
+                for i in (0..Value::COUNT).rev() {
                     if ((all & !joined) >> i) & 1 == 1 {
-                        return Self::Quads(four, i.try_into().unwrap())
+                        return Self::Quads(four, i.try_into().unwrap());
                     }
                 }
                 unreachable!()
             }
         }
+
+        // FullHouse
+        {}
 
         // Flush
         {
@@ -81,25 +77,43 @@ impl From<CardSet> for NlhHand {
                 let suit_bits = (bits >> (Value::COUNT * i)) & v_mask;
 
                 if suit_bits.count_ones() >= 5 {
-                    let mut idx = [Value::Two; 5];
+                    let mut idx = [None; 5];
                     let mut cnt = 0;
 
                     for i in (0..Value::COUNT).rev() {
                         if (suit_bits >> i) & 1 == 1 {
-                            idx[cnt] = i.try_into().unwrap();
+                            idx[cnt] = i.try_into().ok();
                             cnt += 1;
 
                             if cnt == 5 {
-                                break
+                                break;
                             }
                         }
                     }
 
                     assert_eq!(cnt, 5);
-                    return Self::Flush(idx[0], idx[1], idx[2], idx[3], idx[4]);
+                    return Self::Flush(
+                        idx[0].unwrap(),
+                        idx[1].unwrap(),
+                        idx[2].unwrap(),
+                        idx[3].unwrap(),
+                        idx[4].unwrap(),
+                    );
                 }
             }
         }
+
+        // Straight
+        {}
+
+        // Trips
+        {}
+
+        // Two pair
+        {}
+
+        // Pair
+        {}
 
         todo!()
     }
@@ -127,7 +141,6 @@ impl Sub<Card> for CardSet {
 }
 
 impl CardSet {
-    
     /// number of cards in the set
     pub fn len(self) -> u32 {
         self.0.count_ones()
@@ -151,7 +164,7 @@ impl CardSet {
                 if idx > 0 {
                     idx -= 1;
                 } else {
-                    return Some(Card::try_from(i).unwrap())
+                    return Some(Card::try_from(i).unwrap());
                 }
             }
         }
@@ -180,7 +193,7 @@ impl TryFrom<u32> for Card {
 
         let suit: Suit = (value / 13).try_into().unwrap();
         let value: Value = (value % 13).try_into().unwrap();
-        Ok(Card{suit, value})
+        Ok(Card { suit, value })
     }
 }
 
@@ -264,7 +277,7 @@ impl TryFrom<u32> for Value {
             10 => Value::Queen,
             11 => Value::King,
             12 => Value::Ace,
-            other => anyhow::bail!("{} is not a valid value", other)
+            other => anyhow::bail!("{} is not a valid value", other),
         };
         Ok(v)
     }
