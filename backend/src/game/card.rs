@@ -1,6 +1,5 @@
 use std::ops::{Add, Sub};
 
-/// NLH poker hands
 pub enum NlhHand {
     // (top 5 cards...)
     HighCard(Value, Value, Value, Value, Value),
@@ -103,7 +102,7 @@ impl From<CardSet> for NlhHand {
             }
         }
 
-        // Straight
+        // Straight TODO check the wheel
         {
             let value_bits = (0..Suit::COUNT).fold(0, |acc, i| {
                 acc | (bits >> (Value::COUNT * i))

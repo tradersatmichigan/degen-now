@@ -5,6 +5,7 @@ use tokio::sync::Mutex;
 use tokio::sync::RwLock;
 
 mod card;
+mod rules;
 
 /// container for all active games
 #[derive(Clone)]
@@ -93,6 +94,10 @@ pub enum Action {
 }
 
 struct GameState {}
+
+impl GameState {
+
+}
 
 impl Default for GameState {
     fn default() -> Self {
